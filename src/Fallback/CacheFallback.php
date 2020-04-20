@@ -16,10 +16,11 @@ final class CacheFallback implements CacheInterface
      */
     private $fallback;
 
-    public function __construct(CacheInterface $main, CacheInterface $fallback)
+    public function __construct(CacheInterface $main, CacheInterface $fallback, CacheInterface ...$fallbacks)
     {
         $this->main = $main;
-        $this->fallback = $fallback;
+        $nextFallback = \array_shift($fallbacks);
+        $this->fallback = null !== $nextFallback ? new self($fallback, $nextFallback, ...$fallbacks) : $fallback;
     }
 
     /**

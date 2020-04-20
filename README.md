@@ -24,6 +24,21 @@ $cache = new CacheFallback($main, $default);
 $cache->get('foo'); // if $main->get('foo') throws an exception, will call $default->get('foo')
 ```
 
+You can use as many cache pools as you want, so that a failing cache falls back to the next healthy one:
+
+```php
+use BenTools\Cache\Fallback\CacheFallback;
+use Cache\Adapter\Memcache\MemcacheCachePool;
+use Cache\Adapter\Redis\RedisCachePool;
+use Cache\Adapter\PHPArray\ArrayCachePool;
+
+$redis = new RedisCachePool(new Redis());
+$memcache = new MemcacheCachePool(new Memcache());
+$arrayCache = new ArrayCachePool();
+$cache = new CacheFallback($redis, $memcache, $arrayCache);
+$cache->get('foo');
+```
+
 ## Installation
 
 > composer require bentools/cache

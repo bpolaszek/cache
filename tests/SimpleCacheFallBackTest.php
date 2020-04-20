@@ -9,55 +9,51 @@ use Psr\SimpleCache\CacheInterface;
 
 final class SimpleCacheFallBackTest extends TestCase
 {
-
-    /**
-     * @var CacheInterface
-     */
-    private $default;
-
-    /**
-     * @var CacheFallback
-     */
-    private $cache;
-
-    protected function setUp()
-    {
-        $main = new ErrorAdapter();
-        $this->default = new ArrayCachePool();
-        $this->default->set('foo', 'bar');
-        $this->cache = new CacheFallback($main, $this->default);
-    }
-
     /**
      * @test
+     * @dataProvider generateInstances
      */
-    public function it_falls_back()
+    public function it_falls_back(CacheInterface $cache)
     {
-        $this->assertInstanceOf(CacheFallback::class, $this->cache);
-        $this->assertTrue($this->cache->has('foo'));
-        $this->assertEquals('bar', $this->cache->get('foo'));
+        $this->assertTrue($cache->has('foo'));
+        $this->assertEquals('bar', $cache->get('foo'));
 
-        $this->cache->set('foo', 'foobar');
-        $this->assertEquals('foobar', $this->cache->get('foo'));
+        $cache->set('foo', 'foobar');
+        $this->assertEquals('foobar', $cache->get('foo'));
 
-        $this->cache->delete('foo');
-        $this->assertEquals(null, $this->cache->get('foo'));
+        $cache->delete('foo');
+        $this->assertEquals(null, $cache->get('foo'));
 
-        $this->cache->setMultiple(['foo' => 'bar', 'baz' => 'bat']);
-        $this->assertEquals('bar', $this->cache->get('foo'));
-        $this->assertEquals('bat', $this->cache->get('baz'));
+        $cache->setMultiple(['foo' => 'bar', 'baz' => 'bat']);
+        $this->assertEquals('bar', $cache->get('foo'));
+        $this->assertEquals('bat', $cache->get('baz'));
 
-        $this->cache->deleteMultiple(['foo', 'baz']);
-        $this->assertEquals(null, $this->cache->get('foo'));
-        $this->assertEquals(null, $this->cache->get('baz'));
+        $cache->deleteMultiple(['foo', 'baz']);
+        $this->assertEquals(null, $cache->get('foo'));
+        $this->assertEquals(null, $cache->get('baz'));
 
-        $this->cache->set('foo', 'foobar');
-        $this->assertEquals('foobar', $this->cache->get('foo'));
+        $cache->set('foo', 'foobar');
+        $this->assertEquals('foobar', $cache->get('foo'));
 
-        $this->cache->clear();
-        $this->assertEquals(null, $this->cache->get('foo'));
+        $cache->clear();
+        $this->assertEquals(null, $cache->get('foo'));
     }
 
+    public function generateInstances()
+    {
+        yield [$this->createCache()];
+        yield [new CacheFallback(new ErrorAdapter(), $this->createCache())];
+        yield [new CacheFallback(new ErrorAdapter(), new ErrorAdapter(), $this->createCache())];
+        yield [new CacheFallback(new ErrorAdapter(), new ErrorAdapter(), new ErrorAdapter(), $this->createCache())];
+    }
+
+    private function createCache()
+    {
+        $arrayCache = new ArrayCachePool();
+        $arrayCache->set('foo', 'bar');
+
+        return $arrayCache;
+    }
 
 
 }
