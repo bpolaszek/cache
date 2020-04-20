@@ -4,6 +4,7 @@ namespace BenTools\Cache\Tests;
 
 use BenTools\Cache\Fallback\CacheFallback;
 use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\Adapter\Void\VoidCachePool;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
 
@@ -42,6 +43,8 @@ final class SimpleCacheFallBackTest extends TestCase
     public function generateInstances()
     {
         yield [$this->createCache()];
+        yield [new CacheFallback($this->createCache(), new VoidCachePool())];
+        yield [new CacheFallback($this->createCache(), new ErrorAdapter())];
         yield [new CacheFallback(new ErrorAdapter(), $this->createCache())];
         yield [new CacheFallback(new ErrorAdapter(), new ErrorAdapter(), $this->createCache())];
         yield [new CacheFallback(new ErrorAdapter(), new ErrorAdapter(), new ErrorAdapter(), $this->createCache())];
